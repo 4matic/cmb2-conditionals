@@ -59,7 +59,7 @@ jQuery( document ).ready( function( $ ) {
 				} else {
 					elmValue = CMB2ConditionalsStringToUnicode( evt.currentTarget.value );
 				}
-
+				var globalShow = {};
 				dependants.each( function( i, e ) {
 					var loopIndex        = 0,
 						current          = $( e ),
@@ -98,6 +98,34 @@ jQuery( document ).ready( function( $ ) {
 								shouldShow = ( elmValue === requiredValue );
 							} else if ( Array.isArray( requiredValue ) ) {
 								shouldShow = ( $.inArray( elmValue, requiredValue ) > -1 );
+							} else {//if object as value
+								var fieldObj = requiredValue.hasOwnProperty(elmValue) ? requiredValue[elmValue] : false;
+								var inputsNum = 0;
+								$.each(fieldObj, function(i, e){
+									if(e === current.val()) {
+										shouldShow = true;
+										inputsNum++;
+									}
+									//console.log(i, e, current.val());
+								});
+								if(inputsNum > 0) {
+									globalShow[current.val()] = 'undefined' === typeof globalShow[current.val()] ? 1 : globalShow[current.val()]++;
+								}
+
+								var overallTrues = 0;
+								currentParent.find('input').each(function(i, elem){
+									var $input = $(elem);
+									if(globalShow.hasOwnProperty($input.val())) {
+										$input.parent().show();
+										overallTrues += globalShow[$input.val()];
+									} else {
+										$input.parent().hide();
+									}
+								});
+								console.log(overallTrues, current.val(), inputsNum, globalShow);
+								if(overallTrues > 0) shouldShow = true;
+								else shouldShow = false;
+								//console.log(currentParent);
 							}
 						}
 
